@@ -187,15 +187,9 @@ impl Parser {
                     &TokenKind::Op => match token.value() {
                         &TokenValue::Chr(ch) => if ch == '^' || ch == '*' || ch == '/' {
                             state.consume(1);
-
                             let lhs = expr;
                             let rhs = self.parse_mul_expr(state).expect(END_OF_INPUT);
-
-                            if ch == '/' {
-                                expr = Box::new(Expr::Func("frac".into(), vec![lhs, rhs]));
-                            } else {
-                                expr = Box::new(Expr::BinOp(BinOp::from_char(ch), lhs, rhs));
-                            }
+                            expr = Box::new(Expr::BinOp(BinOp::from_char(ch), lhs, rhs));
                         } else {
                             break;
                         },
@@ -249,25 +243,39 @@ mod test {
     use super::*;
 
 
-    macro_rules! test_parse {
-        ($input: expr, $expect: expr) => {
+    macro_rules! parse {
+        ($input: expr) => {{
             let mut lexer = Lexer::from($input);
             let mut parser = Parser::new(&mut lexer);
+            parser.parse().expect("failed to parse tex")
+        }};
+    }
 
-            match parser.parse() {
-                Some(ast) => assert_eq!(ast.to_tex(), $expect),
-                None => panic!("failed to parse tex"),
-            }
+    macro_rules! assert_parse {
+        ($input: expr, $expect: expr) => {
+            assert_eq!(parse!($input).to_tex(), $expect);
         };
     }
 
 
     #[test]
     fn test_parse() {
-        test_parse!("-(1 + 2 - 3 * 4 / 5 ^ x)", "-(1 + 2 - 3 * \\frac{4}{5 ^ x})");
-        test_parse!("\\fake{1}{1 + 2}{1 - 2 - 3}", "\\fake{1}{1 + 2}{1 - 2 - 3}");
-        test_parse!("\\fake(1, 1 + 2, 1 - 2 - 3)", "\\fake{1}{1 + 2}{1 - 2 - 3}");
-        test_parse!("|x + 1|", "|x + 1|");
-        test_parse!("\\frac{1}{2} + sqrt(1 / 2) * 2", "\\frac{1}{2} + \\sqrt{\\frac{1}{2}} * 2");
+        assert_parse!("-(1 + 2 - 3 * 4 / 5 ^ x)", "-(1 + 2 - 3 * \\frac{4}{5 ^ x})");
+        assert_parse!("\\fake{1}{1 + 2}{1 - 2 - 3}", "\\fake{1}{1 + 2}{1 - 2 - 3}");
+        assert_parse!("\\fake(1, 1 + 2, 1 - 2 - 3)", "\\fake{1}{1 + 2}{1 - 2 - 3}");
+        assert_parse!("|x + 1|", "|x + 1|");
+        assert_parse!("\\frac{1}{2} + sqrt(1 / 2) * 2", "\\frac{1}{2} + \\sqrt{\\frac{1}{2}} * 2");
+    }
+
+    #[test]
+    fn test_parse_ast() {
+        let ast = parse!("1 / 2");
+
+        assert_eq!(
+            ast,
+            Box::new(Expr::BinOp(
+                BinOp::Div, Box::new(Expr::Num("1".into())), Box::new(Expr::Num("2".into()))
+            ))
+        );
     }
 }

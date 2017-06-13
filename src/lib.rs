@@ -1,6 +1,7 @@
 #![feature(alloc)]
 #![feature(collections)]
-#![no_std]
+//#![no_std]
+extern crate core;
 
 
 extern crate alloc;
