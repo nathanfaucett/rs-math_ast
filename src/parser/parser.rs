@@ -124,14 +124,21 @@ impl Parser {
                 },
                 &TokenKind::Ident => match token.value() {
                     &TokenValue::Str(ref name) => match self.next_token(state) {
-                        Some(token) => Some(Box::new(Expr::Func(
-                            name.clone(),
-                            match token.kind() {
+                        Some(token) => {
+                            let mut args = match token.kind() {
                                 &TokenKind::LParen => self.parse_comma_args(state),
                                 &TokenKind::LBracket => self.parse_args(state),
                                 _ => Vec::new(),
+                            };
+
+                            if name.as_str() == "frac" {
+                                let rhs = args.pop().expect(END_OF_INPUT);
+                                let lhs = args.pop().expect(END_OF_INPUT);
+                                Some(Box::new(Expr::BinOp(BinOp::Div, lhs, rhs)))
+                            } else {
+                                Some(Box::new(Expr::Func(name.clone(), args)))
                             }
-                        ))),
+                        },
                         None => None,
                     },
                     _ => None,

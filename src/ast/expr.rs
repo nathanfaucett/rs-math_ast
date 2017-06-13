@@ -45,7 +45,13 @@ impl fmt::Display for Expr {
         match self {
             &Expr::Group(ref open, ref close, ref expr) => write!(f, "{}{}{}", open, expr, close),
 
-            &Expr::BinOp(ref bin_op, ref lhs, ref rhs) => write!(f, "{} {} {}", lhs, bin_op, rhs),
+            &Expr::BinOp(ref bin_op, ref lhs, ref rhs) => {
+                if bin_op == &BinOp::Div {
+                    write!(f, "\\frac{{{}}}{{{}}}", lhs, rhs)
+                } else {
+                    write!(f, "{} {} {}", lhs, bin_op, rhs)
+                }
+            },
             &Expr::UnOp(ref un_op, ref expr) => write!(f, "{}{}", un_op, expr),
 
             &Expr::Num(ref num) => write!(f, "{}", num),
