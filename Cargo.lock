@@ -1,0 +1,23 @@
+[root]
+name = "math_ast"
+version = "0.1.0"
+dependencies = [
+ "lexer 0.1.0 (git+https://github.com/nathanfaucett/rs-lexer.git)",
+]
+
+[[package]]
+name = "collection_traits"
+version = "0.1.0"
+source = "git+https://github.com/nathanfaucett/rs-collection_traits.git#0fe9149febf33e7049ae679adbe55e12d9c56b01"
+
+[[package]]
+name = "lexer"
+version = "0.1.0"
+source = "git+https://github.com/nathanfaucett/rs-lexer.git#7d34e8f020fedf193a88992f6cf62af716361faa"
+dependencies = [
+ "collection_traits 0.1.0 (git+https://github.com/nathanfaucett/rs-collection_traits.git)",
+]
+
+[metadata]
+"checksum collection_traits 0.1.0 (git+https://github.com/nathanfaucett/rs-collection_traits.git)" = "<none>"
+"checksum lexer 0.1.0 (git+https://github.com/nathanfaucett/rs-lexer.git)" = "<none>"
