@@ -1,7 +1,7 @@
 use core::fmt;
 
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum UnOp {
     Neg,
 }

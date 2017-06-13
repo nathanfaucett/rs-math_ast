@@ -4,7 +4,7 @@ use collections::vec::Vec;
 
 use core_lexer::Input;
 
-use super::super::{Token, TokenValue, TokenKind, Lexer, BinOp, Expr};
+use super::super::{Token, TokenValue, TokenKind, Lexer, BinOp, UnOp, Expr};
 
 
 static END_OF_INPUT: &'static str = "Unexpected End of Input";
@@ -118,6 +118,10 @@ impl Parser {
                     &TokenValue::Str(ref string) => Some(Box::new(Expr::Num(string.clone()))),
                     _ => None,
                 },
+                &TokenKind::Var => match token.value() {
+                    &TokenValue::Str(ref string) => Some(Box::new(Expr::Var(string.clone()))),
+                    _ => None,
+                },
                 &TokenKind::Ident => match token.value() {
                     &TokenValue::Str(ref name) => match self.next_token(state) {
                         Some(token) => Some(Box::new(Expr::Func(
@@ -132,29 +136,35 @@ impl Parser {
                     },
                     _ => None,
                 },
-                &TokenKind::LParen => {
-                    let expr = self.parse_expr(state);
-
-                    match self.next_token(state) {
-                        Some(token) => match token.kind() {
-                            &TokenKind::RParen => expr,
-                            _ => None,
-                        },
-                        None => None,
-                    }
+                &TokenKind::Op => match token.value() {
+                    &TokenValue::Chr(op) => if op == '-' {
+                        Some(Box::new(Expr::UnOp(
+                            UnOp::Neg,
+                            self.parse_primary_expr(state).expect(END_OF_INPUT)
+                        )))
+                    } else {
+                        None
+                    },
+                    _ => None,
                 },
-                &TokenKind::Abs => {
-                    let expr = self.parse_expr(state);
-
-                    match self.next_token(state) {
-                        Some(token) => match token.kind() {
-                            &TokenKind::Abs => expr,
-                            _ => None,
-                        },
-                        None => None,
-                    }
-                },
+                &TokenKind::LParen => self.parse_group(state, '(', ')'),
+                &TokenKind::LBracket => self.parse_group(state, '{', '}'),
+                &TokenKind::Abs => self.parse_group(state, '|', '|'),
                 _ => None,
+            },
+            None => None,
+        }
+    }
+
+    #[inline]
+    fn parse_group(&self, state: &mut State, open: char, close: char) -> Option<Box<Expr>> {
+        let expr = self.parse_expr(state).expect(END_OF_INPUT);
+
+        match self.next_token(state) {
+            Some(token) => if token.value() == &TokenValue::Chr(close) {
+                Some(Box::new(Expr::Group(open, close, expr)))
+            } else {
+                None
             },
             None => None,
         }
@@ -170,9 +180,15 @@ impl Parser {
                     &TokenKind::Op => match token.value() {
                         &TokenValue::Chr(ch) => if ch == '^' || ch == '*' || ch == '/' {
                             state.consume(1);
-                            let rhs = self.parse_mul_expr(state).expect(END_OF_INPUT);
+
                             let lhs = expr;
-                            expr = Box::new(Expr::BinOp(BinOp::from_char(ch), lhs, rhs));
+                            let rhs = self.parse_mul_expr(state).expect(END_OF_INPUT);
+
+                            if ch == '/' {
+                                expr = Box::new(Expr::Func("frac".into(), vec![lhs, rhs]));
+                            } else {
+                                expr = Box::new(Expr::BinOp(BinOp::from_char(ch), lhs, rhs));
+                            }
                         } else {
                             break;
                         },
@@ -197,8 +213,8 @@ impl Parser {
                     &TokenKind::Op => match token.value() {
                         &TokenValue::Chr(ch) => if ch == '+' || ch == '-' {
                             state.consume(1);
-                            let rhs = self.parse_mul_expr(state).expect(END_OF_INPUT);
                             let lhs = expr;
+                            let rhs = self.parse_mul_expr(state).expect(END_OF_INPUT);
                             expr = Box::new(Expr::BinOp(BinOp::from_char(ch), lhs, rhs));
                         } else {
                             break;
@@ -226,14 +242,25 @@ mod test {
     use super::*;
 
 
+    macro_rules! test_parse {
+        ($input: expr, $expect: expr) => {
+            let mut lexer = Lexer::from($input);
+            let mut parser = Parser::new(&mut lexer);
+
+            match parser.parse() {
+                Some(ast) => assert_eq!(ast.to_tex(), $expect),
+                None => panic!("failed to parse tex"),
+            }
+        };
+    }
+
+
     #[test]
     fn test_parse() {
-        let mut lexer = Lexer::from("\\frac{1}{2} + sqrt(2) * 2");
-        let mut parser = Parser::new(&mut lexer);
-
-        match parser.parse() {
-            Some(ast) => assert_eq!(ast.to_string(), "\\frac{1}{2} + \\sqrt{2} * 2"),
-            None => panic!("failed to parse tex"),
-        }
+        test_parse!("-(1 + 2 - 3 * 4 / 5 ^ x)", "-(1 + 2 - 3 * \\frac{4}{5 ^ x})");
+        test_parse!("\\fake{1}{1 + 2}{1 - 2 - 3}", "\\fake{1}{1 + 2}{1 - 2 - 3}");
+        test_parse!("\\fake(1, 1 + 2, 1 - 2 - 3)", "\\fake{1}{1 + 2}{1 - 2 - 3}");
+        test_parse!("|x + 1|", "|x + 1|");
+        test_parse!("\\frac{1}{2} + sqrt(1 / 2) * 2", "\\frac{1}{2} + \\sqrt{\\frac{1}{2}} * 2");
     }
 }

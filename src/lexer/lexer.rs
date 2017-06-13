@@ -1,6 +1,7 @@
 use collections::vec::Vec;
 
 use core_lexer::{self, Input};
+use collection_traits::Iterable;
 
 use super::token::Token;
 use super::readers;
@@ -31,8 +32,25 @@ impl<I: Input> Lexer<I> {
     }
 }
 
-impl<'a> From<&'a str> for Lexer<Vec<char>> {
+impl<I> From<I> for Lexer<I>
+    where I: Input
+{
+    #[inline(always)]
+    fn from(value: I) -> Self {
+        Self::new(value)
+    }
+}
 
+impl<'a, I> From<&'a I> for Lexer<Vec<char>>
+    where I: Iterable<'a, &'a char>
+{
+    #[inline(always)]
+    fn from(value: &'a I) -> Self {
+        Self::new(value.iter().map(|ch| *ch).collect())
+    }
+}
+
+impl<'a> From<&'a str> for Lexer<Vec<char>> {
     #[inline(always)]
     fn from(value: &'a str) -> Self {
         Self::new(value.chars().collect())
