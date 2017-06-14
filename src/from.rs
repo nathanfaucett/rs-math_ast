@@ -36,11 +36,20 @@ pub fn from_iter<'a, I>(input: &'a I) -> Option<Box<Expr>>
 
 #[cfg(test)]
 mod test {
+    use collections::vec::Vec;
     use super::*;
+
 
     #[test]
     fn test_from() {
-        let vec = vec!['|', 'x', '+', '1', '|'];
+        let mut vec = Vec::new();
+
+        vec.push('|');
+        vec.push('x');
+        vec.push('+');
+        vec.push('1');
+        vec.push('|');
+
         assert_eq!(from(vec.clone()).unwrap().to_tex(), "|x + 1|");
         assert_eq!(from_str("|x + 1|").unwrap().to_tex(), "|x + 1|");
         assert_eq!(from_iter(&vec).unwrap().to_tex(), "|x + 1|");
