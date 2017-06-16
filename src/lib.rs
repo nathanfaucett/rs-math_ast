@@ -1,10 +1,8 @@
 #![feature(alloc)]
-#![feature(collections)]
 #![no_std]
 
 
 extern crate alloc;
-extern crate collections;
 
 #[macro_use]
 extern crate serde_derive;

@@ -1,4 +1,4 @@
-use collections::string::String;
+use alloc::string::String;
 
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

@@ -1,4 +1,4 @@
-use collections::string::String;
+use alloc::string::String;
 
 use core_lexer::{Reader, State, Input, TokenMeta};
 

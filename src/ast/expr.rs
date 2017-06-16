@@ -1,7 +1,6 @@
 use alloc::boxed::Box;
-
-use collections::vec::Vec;
-use collections::string::{String, ToString};
+use alloc::vec::Vec;
+use alloc::string::{String, ToString};
 
 use core::fmt;
 

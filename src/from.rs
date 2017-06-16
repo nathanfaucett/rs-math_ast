@@ -36,7 +36,7 @@ pub fn from_iter<'a, I>(input: &'a I) -> Option<Box<Expr>>
 
 #[cfg(test)]
 mod test {
-    use collections::vec::Vec;
+    use alloc::vec::Vec;
     use super::*;
 
 

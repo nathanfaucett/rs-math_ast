@@ -1,4 +1,4 @@
-use collections::vec::Vec;
+use alloc::vec::Vec;
 
 use core_lexer::{self, Input};
 use collection_traits::Iterable;
@@ -69,7 +69,7 @@ impl<I: Input> Iterator for Lexer<I> {
 
 #[cfg(test)]
 mod test {
-    use collections::vec::Vec;
+    use alloc::vec::Vec;
 
     use super::{Lexer, Token};
 

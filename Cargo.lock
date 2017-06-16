@@ -11,12 +11,12 @@ dependencies = [
 [[package]]
 name = "collection_traits"
 version = "0.1.0"
-source = "git+https://github.com/nathanfaucett/rs-collection_traits.git#0fe9149febf33e7049ae679adbe55e12d9c56b01"
+source = "git+https://github.com/nathanfaucett/rs-collection_traits.git#a75d1c20655834c53b29a232cad5f1a3b1c1ddb3"
 
 [[package]]
 name = "lexer"
 version = "0.1.0"
-source = "git+https://github.com/nathanfaucett/rs-lexer.git#157f2f73bde5d13b52ff5d59ebf60a18a2a8be31"
+source = "git+https://github.com/nathanfaucett/rs-lexer.git#5265f18e801a551a82af2d4f6240b23d7a3334cf"
 dependencies = [
  "collection_traits 0.1.0 (git+https://github.com/nathanfaucett/rs-collection_traits.git)",
 ]
